@@ -36,9 +36,18 @@ public class ProductLabel extends Button {
         this.product.setAmount(this.product.getAmount() + amount);
         this.update();
     }
-//TODO: udpate objects
+
     protected void update() {
-        this.update();
+        this.updateText();
+        this.updateDescriptionTip();
     }
 
+    private void updateDescriptionTip() {
+        this.setTooltip(new Tooltip("Description: " + product.getDescription() +
+                "\nProducer: " + product.getProducer()));
+    }
+
+    private void updateText() {
+        this.setText(product.getName() + " [" + product.getAmount() + "pcs, " + product.getPrice() + "$]");
+    }
 }
