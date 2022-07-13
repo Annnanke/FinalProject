@@ -62,9 +62,9 @@ public class MyServer {
 
     /**get URI ID*/
     private static int getURIID(String uri){
-        String[] splitted = uri.split("/");
+        String[] splitt = uri.split("/");
         int result = 0;
-        String possId = splitted[splitted.length-1];
+        String possId = splitt[splitt.length-1];
         if (!possId.chars().allMatch(x -> Character.isDigit(x))) {
             return result;
         }
@@ -200,18 +200,7 @@ public class MyServer {
                 }
         );
 
-        server.createContext("/api/categories", exchange -> {
 
-                    if(exchange.getRequestMethod().equals("GET")){
-                        List<Category> categories = db.getAllCategories();
-                        byte[] response = objectMapper.writeValueAsBytes(categories);
-                        exchange.getResponseHeaders().set("Content-Type", "application/json");
-                        exchange.sendResponseHeaders(200, response.length);
-                        exchange.getResponseBody().write(response);
-                    }else exchange.sendResponseHeaders(405, 0);
-                    exchange.close();
-                }
-        );
 
         server.createContext("/api/good", exchange -> {
             if(exchange.getRequestMethod().equals("PUT")){
@@ -270,6 +259,24 @@ public class MyServer {
                     exchange.close();
                 }
         ).setAuthenticator(authenticator);
+
+
+
+        server.createContext("/api/categories", exchange -> {
+
+                    if (exchange.getRequestMethod().equals("GET")) {
+                        List<Category> categories = db.getAllCategories();
+                        byte[] response = objectMapper.writeValueAsBytes(categories);
+
+                        exchange.getResponseHeaders().set("Content-Type", "application/json");
+                        exchange.sendResponseHeaders(200, response.length);
+
+                        exchange.getResponseBody().write(response);
+
+                    } else exchange.sendResponseHeaders(405, 0);
+                    exchange.close();
+                }
+        );
 
 
 
