@@ -1,5 +1,7 @@
 package Objects;
 
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TitledPane;
@@ -10,6 +12,10 @@ import java.util.ArrayList;
 import java.util.Optional;
 
 import static Requesters.DeleteRequests.deleteCategory;
+import static Requesters.DeleteRequests.deleteProduct;
+import static Requesters.PutRequests.putProductRequest;
+import static Requesters.UpdateRequests.updateCategoryRequest;
+import static Requesters.UpdateRequests.updateProductRequest;
 
 
 public class CategoryPane extends TitledPane {
@@ -56,17 +62,51 @@ public class CategoryPane extends TitledPane {
     }
 
     private void addProduct() {
+        ProductDialog dialog = new ProductDialog(category.getId());
+        Optional<Product> results = dialog.showAndWait();
+        System.out.println(getTotalCost());
+        results.ifPresent((Product result) -> {
+            // TODO: Database callback
+            int[] array  = putProductRequest(result);
+            if(array[0] == 201) {
+                result.setId(array[1]);
+                this.addProductLabel(new CategoryProductLabel(result));
+            } else{
+                // TODO: Add error;
+                System.out.println("ERROR");
+            }
+        });
 
+        // ProductLabel productLabel = new ProductLabel(product);
+
+        // TODO: Database callback
+        // addProductLabel(productLabel);
     }
 
     private void editCategory() {
         CategoryDialog dialog = new CategoryDialog(category);
+        Optional<Category> results = dialog.showAndWait();
+        results.ifPresent((Category result) -> {
+            // TODO: Database callback
+            int code = updateCategoryRequest(result);
+            if(code == 204){
+                this.setCategory(result);
+            } else{
+                // TODO: Error
+                System.out.println("Error");
+            }
+
+            System.out.println("Got result!");
+        });
     }
 
     private void removeCategory() {
 
         // TODO: Database callback
         int code = deleteCategory(this.category);
+        if(code != 204){
+            System.out.println("Error");
+        }
 
     }
 
@@ -77,7 +117,27 @@ public class CategoryPane extends TitledPane {
         MenuItem remove = new MenuItem("Remove category");
         menu.getItems().addAll(add, edit, remove);
 
+        add.setOnAction(new EventHandler<>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                CategoryPane.this.addProduct();
+            }
+        });
 
+        edit.setOnAction(new EventHandler<>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                CategoryPane.this.editCategory();
+            }
+        });
+
+        remove.setOnAction(new EventHandler<>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                CategoryPane.this.removeCategory();
+            }
+        });
+        this.setContextMenu(menu);
     }
 
     private void update() {
@@ -95,21 +155,17 @@ public class CategoryPane extends TitledPane {
     }
 
     public Double getTotalCost() {
-        Product product = null;
-        double totalCost = 0;
-        while(true) {
+        Double totalCost = 0d;
+        for (Product product : getProducts())
             totalCost += product.getAmount() * product.getPrice();
-
-
-    }}
+        return totalCost;
+    }
 
     public int getTotalAmount() {
         int totalAmount = 0;
-        Product product = null;
-        while(true) {
+        for (Product product : getProducts())
             totalAmount += product.getAmount();
-        }
-
+        return totalAmount;
     }
 
     public Category getCategory() {
@@ -122,7 +178,8 @@ public class CategoryPane extends TitledPane {
     }
 
     public void addProductLabel(CategoryProductLabel categoryProductLabel) {
-
+        productsVBox.getChildren().add(categoryProductLabel);
+        productLabels.add(categoryProductLabel);
         this.update();
     }
 
@@ -139,6 +196,8 @@ public class CategoryPane extends TitledPane {
         return res;
     }
 
+    /** Class for units inside category list **/
+
     public class CategoryProductLabel extends ProductLabel {
 
         public CategoryProductLabel(Product product) {
@@ -152,6 +211,109 @@ public class CategoryPane extends TitledPane {
         }
 
 
+        private void addAmount() {
+            AddSubstractAmount dialog = new AddSubstractAmount(true, this.getProduct().getAmount());
+            Optional<Double> results = dialog.showAndWait();
+            results.ifPresent((Double result) -> {
+                // TODO: Database callback
+                this.addAmount(result);
+                this.update();
+                CategoryPane.this.update();
+
+                int code = updateProductRequest(this.getProduct());
+                if(!(code == 204)){
+                    System.out.println("Error");
+                }
+                this.update();
+                CategoryPane.this.update();
+            });
+        }
+
+        private void reduceAmount() {
+            AddSubstractAmount dialog = new AddSubstractAmount(false, this.getProduct().getAmount());
+            Optional<Double> results = dialog.showAndWait();
+            results.ifPresent((Double result) -> {
+                // TODO: Database callback
+                this.addAmount(-result);
+                this.update();
+                CategoryPane.this.update();
+
+                int code = updateProductRequest(this.getProduct());
+                if(!(code == 204)){
+                    System.out.println("Error");
+                }
+                this.update();
+                CategoryPane.this.update();
+            });
+        }
+
+        private void editProduct() {
+            ProductDialog dialog = new ProductDialog(category.getId(), getProduct());
+            Optional<Product> results = dialog.showAndWait();
+            System.out.println(getTotalCost());
+            results.ifPresent((Product result) -> {
+                // TODO: Database callback
+                int code = updateProductRequest(result);
+                if(code == 204){
+                    this.setProduct(result);
+                } else{
+                    System.out.println("Error");
+                }
+                this.setProduct(result);
+                this.update();
+                CategoryPane.this.update();
+            });
+            System.out.println(getTotalCost());
+        }
+
+        private void removeProduct() {
+            // TODO: Database callback
+            int code =    deleteProduct(this.getProduct());
+            if(code != 204){
+                System.out.println("Error");
+            }
+            this.getProduct();
+            removeProductLabel(this);
+
+        }
+
+        private void addContextMenu() {
+            ContextMenu menu = new ContextMenu();
+            MenuItem add = new MenuItem("Add amount");
+            MenuItem reduce = new MenuItem("Reduce amount");
+            MenuItem edit = new MenuItem("Edit product");
+            MenuItem remove = new MenuItem("Remove product");
+            menu.getItems().addAll(add, reduce, edit, remove);
+
+            add.setOnAction(new EventHandler<>() {
+                @Override
+                public void handle(ActionEvent actionEvent) {
+                    CategoryProductLabel.this.addAmount();
+                }
+            });
+
+            reduce.setOnAction(new EventHandler<>() {
+                @Override
+                public void handle(ActionEvent actionEvent) {
+                    CategoryProductLabel.this.reduceAmount();
+                }
+            });
+
+            edit.setOnAction(new EventHandler<>() {
+                @Override
+                public void handle(ActionEvent actionEvent) {
+                    CategoryProductLabel.this.editProduct();
+                }
+            });
+
+            remove.setOnAction(new EventHandler<>() {
+                @Override
+                public void handle(ActionEvent actionEvent) {
+                    CategoryProductLabel.this.removeProduct();
+                }
+            });
+            this.setContextMenu(menu);
+        }
 
     }
 }

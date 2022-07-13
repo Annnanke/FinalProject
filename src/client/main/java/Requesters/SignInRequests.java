@@ -1,64 +1,32 @@
 package Requesters;
 
 
-import Objects.Category;
-import Objects.Product;
-import com.fasterxml.jackson.core.JsonProcessingException;
-
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.nio.ByteBuffer;
 
-import static Requesters.ConnectionString.*;
+import static Requesters.ConnectionString.LOCAL_URL;
+import static Requesters.ConnectionString.AUTH_TOKEN;
 
 public class SignInRequests {
 
-    public static int[] putProductRequest(Product product) {
-        String body = null;
-        product.setId(1);
-
-        return putSample(LOCAL_URL_PRODUCT, body);
-    }
-
-    public static int[] putCategoryRequest(    Category category) {
-        String body = null;
-
-        return putSample(LOCAL_URL_CATEGORY, body);
-    }
-
-    private static int[] putSample(String path, String body){
-        HttpRequest request = null;
-        try {
-            request = HttpRequest.newBuilder()
-                    .uri(new URI(path))
-                    .header("accept", "application/json")
-                    .header("Authorization", AUTH_TOKEN)
-                    .PUT(HttpRequest.BodyPublishers.ofString(body))
-                    .build();
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
+    public static int doSignInRequest(String login, String password) throws URISyntaxException, IOException, InterruptedException {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(new URI(LOCAL_URL + "/login"))
+                .header("accept", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(GenerateLoginJSON(login, password)))
+                .build();
+        HttpResponse<String> response = HttpClient.newHttpClient().
+                send(request, HttpResponse.BodyHandlers.ofString());
+        if(response.statusCode() == 200) {
+            AUTH_TOKEN = response.headers().firstValue("Authorization").get();
         }
 
-        HttpResponse<String> response = null;
-        int id = 0;
-        try {
-            response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
-            if(response.statusCode() == 201) {
-                byte[] array = response.body().getBytes();
-                ByteBuffer wrapped = ByteBuffer.wrap(array); // big-endian by default
-                id = wrapped.getInt();
-            }
-        } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        return new int[]{response.statusCode(), id};
+        return response.statusCode();
     }
-
 
     private static String GenerateLoginJSON(String login, String password){
         return "{\"login\": \"" + login + "\", \"password\": \"" + password + "\"}";
