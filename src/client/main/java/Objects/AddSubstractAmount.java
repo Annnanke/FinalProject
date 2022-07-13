@@ -1,9 +1,20 @@
 package Objects;
+import javafx.scene.control.*;
+import javafx.scene.layout.VBox;
 
-
-public class AddSubtractAmount extends Dialog<Double> {
-    public AddSubtractAmount(boolean add, Double currentAmount) {
+public class AddSubstractAmount extends Dialog<Double> {
+    public AddSubstractAmount(boolean add, Double currentAmount) {
         super();
+        Label addLabel;
+        if (add) {
+            this.setTitle("Add amount");
+            addLabel = new Label("How much do you want to add?");
+        }
+        else {
+            this.setTitle("Subtract amount");
+            addLabel = new Label("How much do you want to subtract?");
+        }
+
         DialogPane dialogPane = this.getDialogPane();
         dialogPane.getButtonTypes().addAll(ButtonType.APPLY, ButtonType.CANCEL);
 
@@ -14,7 +25,7 @@ public class AddSubtractAmount extends Dialog<Double> {
         this.setResultConverter((ButtonType button) -> {
             if (button == ButtonType.APPLY) {
                 try {
-                    Double amountValue = Double.parseDouble(amount.getText());
+                    double amountValue = Double.parseDouble(amount.getText());
                     if ((add ? amountValue : -amountValue) + currentAmount < 0)
                         throw new IllegalArgumentException("amount can't be negative");
                     return Double.parseDouble(amount.getText());

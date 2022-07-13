@@ -1,10 +1,9 @@
 package Requesters;
 
+
 import Objects.Category;
 import Objects.Product;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 
 import java.io.IOException;
 import java.net.URI;
@@ -16,28 +15,18 @@ import java.nio.ByteBuffer;
 
 import static Requesters.ConnectionString.*;
 
-
-public class PutRequests {
-    private static ObjectMapper objectMapper =  new ObjectMapper();
+public class SignInRequests {
 
     public static int[] putProductRequest(Product product) {
         String body = null;
         product.setId(1);
-        try {
-            body = objectMapper.writeValueAsString(product);
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-        }
+
         return putSample(LOCAL_URL_PRODUCT, body);
     }
 
     public static int[] putCategoryRequest(    Category category) {
         String body = null;
-        try {
-            body = objectMapper.writeValueAsString(category);
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-        }
+
         return putSample(LOCAL_URL_CATEGORY, body);
     }
 
@@ -68,5 +57,10 @@ public class PutRequests {
         }
 
         return new int[]{response.statusCode(), id};
+    }
+
+
+    private static String GenerateLoginJSON(String login, String password){
+        return "{\"login\": \"" + login + "\", \"password\": \"" + password + "\"}";
     }
 }
