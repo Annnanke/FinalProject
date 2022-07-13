@@ -1,7 +1,7 @@
 <component name="libraryTable">
   <library name="javafx-sdk-16">
     <CLASSES>
-      <root url="file://$USER_HOME$/Videos/javafx-sdk-16" />
+      <root url="jar://$PROJECT_DIR$/../../../javafx-sdk-16.zip!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES />

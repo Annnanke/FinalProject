@@ -8,6 +8,7 @@
         <outputRelativeToContentRoot value="true" />
         <module name="p1" />
         <module name="pr2" />
+        <module name="ksz" />
       </profile>
     </annotationProcessing>
   </component>
