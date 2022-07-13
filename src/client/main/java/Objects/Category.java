@@ -1,6 +1,5 @@
 package Objects;
 
-
 public class Category {
     private Integer id = -1;
     private String name;
