@@ -3,6 +3,8 @@ package DB;
 import Baiscs.Category;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class DB {
 
@@ -88,7 +90,7 @@ public class DB {
             st.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
-            throw new RuntimeException("ISSUE WITH DELETE PRODUCT", e);
+            throw new RuntimeException("ISSUE WITH DELETING PRODUCT", e);
         }
     }
 
@@ -101,8 +103,7 @@ public class DB {
             ResultSet res = st.executeQuery("SELECT * FROM category WHERE ID = " + ID + ";");
 
             if (res.next()) {
-                return null;
-                //get category by result
+                return  getCategoryFromResultSet(res);
 
             } else return null;
 
@@ -110,6 +111,15 @@ public class DB {
             e.printStackTrace();
             throw new RuntimeException("ISSUE WITH SQL QUERY FOR CATEGORY SELECTED BY ID", e);
         }
+    }
+
+
+    /**get category from the result set*/
+    private static Category getCategoryFromResultSet(ResultSet res) throws SQLException {
+
+        return new Category(res.getInt("id"),
+                res.getString("name"),
+                res.getString("description"));
     }
 
 
@@ -144,6 +154,65 @@ public class DB {
         }
         return false;
     }
+
+
+    /**insert a category*/
+    public Category insertCategory(Category category) {
+        try {
+            PreparedStatement statement = con.prepareStatement("INSERT INTO category(name, description) VALUES (?, ?)");
+
+            statement.setString(1, category.getName());
+            statement.setString(2, category.getDescription());
+            statement.executeUpdate();
+
+            ResultSet resSet = statement.getGeneratedKeys();
+            category.setId(resSet.getInt("last_insert_rowid()"));
+            statement.close();
+
+            return category;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("ISSUES WITH INSERTING A CATEGORY", e);
+        }
+    }
+
+    /**update a category*/
+    public void updateCategory(Category category){
+        try{
+            Statement st = con.createStatement();
+            st.executeUpdate("UPDATE category" +
+                    " SET name = '" + category.getName() + "', " +
+                    "description = '" + category.getDescription()  +
+                    "' WHERE id = " + category.getId()  +
+                    ";");
+        }catch (SQLException e){
+            e.printStackTrace();
+            throw new RuntimeException("ISSUES WITH UPDATING CATEGORY", e);
+        }
+    }
+
+    /**get ALL the categories*/
+    public List<Category> getAllCategories() {
+        try {
+            Statement st = con.createStatement();
+            ResultSet res = st.executeQuery("SELECT * FROM category");
+            List<Category> categories = new ArrayList<>();
+            while (res.next()) {
+                categories.add(getCategoryFromResultSet(res));
+            }
+            res.close();
+            return categories;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("ISSUES WITH SQL QUERY FOR SELECTED CATEGORIES", e);
+        }
+    }
+
+
+
+
+
 
 
 
