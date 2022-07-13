@@ -1,4 +1,4 @@
-package Baiscs;
+package Basics;
 
 
 public class User {

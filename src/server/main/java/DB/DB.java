@@ -1,7 +1,8 @@
 package DB;
 
-import Baiscs.Category;
-import Baiscs.Product;
+import Basics.Category;
+import Basics.Product;
+import Basics.User;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -125,7 +126,7 @@ public class DB {
 
 
    /**insert a product*/
-    public Product insertProduct(Product product) {
+    public Product addProduct(Product product) {
         try {
             PreparedStatement statement = con.prepareStatement("INSERT INTO product(name, description, producer, price, amount, category_id) VALUES (?, ?, ?, ?, ?, ?)");
 
@@ -303,7 +304,7 @@ public class DB {
 
 
     /**insert a category*/
-    public Category insertCategory(Category category) {
+    public Category addCategory(Category category) {
         try {
             PreparedStatement statement = con.prepareStatement("INSERT INTO category(name, description) VALUES (?, ?)");
 
@@ -367,6 +368,50 @@ public class DB {
         } catch (SQLException e) {
             e.printStackTrace();
             throw new RuntimeException("ISSUE WITH DELETE CATEGORY", e);
+        }
+    }
+
+
+    //USER
+
+   /**get the user by it's login*/
+    public User getUserByLogin(String login) {
+
+        try {
+            Statement st = con.createStatement();
+            ResultSet res = st.executeQuery("SELECT * FROM users where login = '" + login + "'");
+
+            if (res.next()) {
+                return new User(res.getInt("id"), res.getString("login"), res.getString("password"));
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("UNABLE TO GET USER", e);
+        }
+
+        return null;
+    }
+
+
+    /**insert a user*/
+    public User addUser(User user) {
+
+        try {
+            PreparedStatement statement = con.prepareStatement("INSERT INTO users(login, password) VALUES (?, ?)");
+
+            statement.setString(1, user.getLogin());
+            statement.setString(2, user.getPassword());
+
+            statement.executeUpdate();
+            ResultSet resSet = statement.getGeneratedKeys();
+
+            user.setId(resSet.getInt("last_insert_rowid()"));
+            statement.close();
+            return user;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+
+            throw new RuntimeException("ISSUES WITH ADDING A USER", e);
         }
     }
 

@@ -1,28 +1,22 @@
 package Server;
 
-import Baiscs.Category;
-import Baiscs.Product;
-import Baiscs.User;
+import Basics.Category;
+import Basics.Product;
+import Basics.User;
 import DB.DB;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sun.net.httpserver.Authenticator;
-import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpPrincipal;
 import com.sun.net.httpserver.HttpServer;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.lang.Strings;
 
 import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public class MyServer {
@@ -108,7 +102,61 @@ public class MyServer {
     //MAIN
 
 
-    public static void main(String[] args) throws IOException {
+    /**a main method. create user, categories and products. test stuff*/
+    public static void main(String[] args)  throws IOException {
+        HttpServer server = HttpServer.create(new InetSocketAddress(6060), 0);
+        DB db = new DB();
+        db.initDatabase("warehouse");
+
+        for (User user : users)
+            db.addUser(user);
+
+        for (Category category: categories)
+            db.addCategory(category);
+
+        for(Product product: products)
+            db.addProduct(product);
+
+        server.start();
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        server.createContext("/login", exchange -> {
+            if (exchange.getRequestMethod().equals("POST")) {
+                User user = objectMapper.readValue(exchange.getRequestBody(), User.class);
+                User userFromDb = db.getUserByLogin(user.getLogin());
+                if(userFromDb != null)
+                {
+                    if(userFromDb.getPassword().equals(user.getPassword()))
+                    {
+                        String jwt = createJWTFromLogin(userFromDb.getLogin());
+                        System.out.println(getUserLoginFromJWT(jwt));
+                        exchange.getResponseHeaders().set("Authorization", jwt);
+                        exchange.sendResponseHeaders(200, 0);
+                    }
+                    else {
+                        exchange.sendResponseHeaders(401, 0);
+                    }
+                }
+                else {
+                    exchange.sendResponseHeaders(401, 0);
+                }
+            } else {
+                exchange.sendResponseHeaders(405, 0);
+            }
+            exchange.close();
+        });
+
+        //authentication
+        //getters
+        //...
+
+
+
+
+
+
+
+
     }
 
 
