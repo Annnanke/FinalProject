@@ -127,11 +127,12 @@ public class MyServer {
         ObjectMapper objectMapper = new ObjectMapper();
 
         server.createContext("/login", exchange -> {
+
             if (exchange.getRequestMethod().equals("POST")) {
                 User user = objectMapper.readValue(exchange.getRequestBody(), User.class);
                 User userFromDb = db.getUserByLogin(user.getLogin());
-                if(userFromDb != null)
-                {
+
+                if(userFromDb != null) {
                     if(userFromDb.getPassword().equals(user.getPassword()))
                     {
                         String jwt = createJWTFromLogin(userFromDb.getLogin());
@@ -152,14 +153,16 @@ public class MyServer {
             exchange.close();
         });
 
+        //authentication
         Authenticator authenticator = new Authenticator() {
             @Override
             public Result authenticate(HttpExchange exchange) {
                 String jwt= exchange.getRequestHeaders().getFirst("Authorization");
-                if(jwt!=null) {
+                if(jwt != null) {
                     String login = getUserLoginFromJWT(jwt);
                     User user = db.getUserByLogin(login);
-                    if(user!=null){
+
+                    if(user != null){
                         return new Success(new HttpPrincipal(login,"admin"));
                     }
                 }
@@ -167,35 +170,48 @@ public class MyServer {
             }
         };
 
+
+        //ALL GOOD RELATED
         server.createContext("/api/goods", exchange -> {
-                    if(exchange.getRequestMethod().equals("GET")){
+
+                    if(exchange.getRequestMethod().equals("GET")) {
                         List<Product> products = db.getAllProducts();
                         byte[] response = objectMapper.writeValueAsBytes(products);
+
                         exchange.getResponseHeaders().set("Content-Type", "application/json");
                         exchange.sendResponseHeaders(200, response.length);
                         exchange.getResponseBody().write(response);
-                    }else exchange.sendResponseHeaders(405, 0);
+
+                    } else{
+                        exchange.sendResponseHeaders(405, 0);
+                    }
                     exchange.close();
                 }
         );
 
         server.createContext("/api/goodsbycategory/", exchange -> {
                     int categoryId = getURIID(exchange.getRequestURI().getPath());
-                    if(categoryId < 1){
+
+                    if(categoryId < 1) {
                         exchange.sendResponseHeaders(404, 0);
                         exchange.close();
                         return;
-                    } else if(!(db.isCategoryPresent(categoryId))){
+
+                    } else if(!(db.isCategoryPresent(categoryId))) {
                         exchange.sendResponseHeaders(404, 0);
                         exchange.close();
                         return;
-                    } else if(exchange.getRequestMethod().equals("GET")){
+
+                    } else if (exchange.getRequestMethod().equals("GET")) {
                         List<Product> products = db.getProductsByCategoryId(categoryId);
                         byte[] response = objectMapper.writeValueAsBytes(products);
                         exchange.getResponseHeaders().set("Content-Type", "application/json");
                         exchange.sendResponseHeaders(200, response.length);
+
                         exchange.getResponseBody().write(response);
-                    }else exchange.sendResponseHeaders(405, 0);
+                    } else{
+                        exchange.sendResponseHeaders(405, 0);
+                    }
                     exchange.close();
                 }
         );
@@ -203,7 +219,8 @@ public class MyServer {
 
 
         server.createContext("/api/good", exchange -> {
-            if(exchange.getRequestMethod().equals("PUT")){
+
+            if(exchange.getRequestMethod().equals("PUT")) {
                 Product product = objectMapper.readValue(exchange.getRequestBody().readAllBytes(), Product.class);
 
                 if(product != null) {
@@ -217,30 +234,38 @@ public class MyServer {
                         exchange.getResponseBody().write(response);
                     }
                 }
-            } else exchange.sendResponseHeaders(405, 0);
+            } else {
+                exchange.sendResponseHeaders(405, 0);
+            }
             exchange.close();
+
         }).setAuthenticator(authenticator);
 
+        server.createContext("/api/good/", exchange -> {
 
-        // Goods
-        server.createContext("/api/good/", exchange ->{
                     int productId = getURIID(exchange.getRequestURI().getPath());
-                    if(productId < 1){
+
+                    if (productId < 1) {
                         exchange.sendResponseHeaders(404, 0);
                         exchange.close();
                         return;
-                    } else if(!(db.isProductPresent(productId))){
+
+                    } else if(!(db.isProductPresent(productId))) {
                         exchange.sendResponseHeaders(404, 0);
                         exchange.close();
                         return;
 
                     } else if(exchange.getRequestMethod().equals("GET")){
+
                         Product product = db.getProductByID(productId);
                         byte[] response = objectMapper.writeValueAsBytes(product);
+
                         exchange.getResponseHeaders().set("Content-Type", "application/json");
                         exchange.sendResponseHeaders(200, response.length);
                         exchange.getResponseBody().write(response);
-                    }else if(exchange.getRequestMethod().equals("POST")){
+
+                    } else if(exchange.getRequestMethod().equals("POST")) {
+
                         String test = new String(exchange.getRequestBody().readAllBytes());
                         test = Strings.replace(test, "\r\n", "");
                         Product pr = objectMapper.readValue(exchange.getRequestBody(), Product.class);
@@ -261,7 +286,7 @@ public class MyServer {
         ).setAuthenticator(authenticator);
 
 
-
+        //CATEGORIES
         server.createContext("/api/categories", exchange -> {
 
                     if (exchange.getRequestMethod().equals("GET")) {
@@ -279,9 +304,68 @@ public class MyServer {
         );
 
 
+        server.createContext("/api/category", exchange -> {
+            if(exchange.getRequestMethod().equals("PUT")){
+                Category category = objectMapper.readValue(exchange.getRequestBody(), Category.class);
+                if(category != null) {
+                    if(db.isCategoryPresent_ByName(category.getName()) ||!category.isValid()){
+                        exchange.sendResponseHeaders(409, 0);
+                    } else {
+                        category = db.addCategory(category);
+                        byte[] response = ByteBuffer.allocate(4).putInt(category.getId()).array();;
+                        exchange.sendResponseHeaders(201, response.length);
+                        exchange.getResponseBody().write(response);
+                    }
+                }
+            } else exchange.sendResponseHeaders(405, 0);
+            exchange.close();
+        }).setAuthenticator(authenticator);
 
 
 
+        server.createContext("/api/category/", exchange ->{
+                    int categoryId = getURIID(exchange.getRequestURI().getPath());
+
+                    if(categoryId < 1) {
+                        exchange.sendResponseHeaders(404, 0);
+                        exchange.close();
+                        return;
+
+                    } else if(!(db.isCategoryPresent(categoryId))) {
+                        exchange.sendResponseHeaders(404, 0);
+                        exchange.close();
+                        return;
+
+                    } else if(exchange.getRequestMethod().equals("GET")) {
+
+                        Category category = db.getCategoryByID(categoryId);
+                        byte[] response = objectMapper.writeValueAsBytes(category);
+
+                        exchange.getResponseHeaders().set("Content-Type", "application/json");
+                        exchange.sendResponseHeaders(200, response.length);
+                        exchange.getResponseBody().write(response);
+
+                    } else if(exchange.getRequestMethod().equals("POST")) {
+
+                        String test = new String(exchange.getRequestBody().readAllBytes());
+                        test = Strings.replace(test, "\r\n", "");
+                        Category category = objectMapper.readValue(test, Category.class);
+
+                        db.updateCategory(category);
+                        exchange.sendResponseHeaders(204, 0);
+
+                    } else if(exchange.getRequestMethod().equals("DELETE")){
+                        Category category = db.getCategoryByID(categoryId);
+                        db.deleteCategory(category.getId());
+
+                        exchange.sendResponseHeaders(204, 0);
+                    }
+                    else{
+                        exchange.sendResponseHeaders(405, 0);
+                    }
+                    exchange.close();
+                }
+        ).setAuthenticator(authenticator);
 
 
 
