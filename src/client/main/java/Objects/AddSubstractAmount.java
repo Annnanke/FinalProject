@@ -25,11 +25,13 @@ public class AddSubstractAmount extends Dialog<Double> {
         this.setResultConverter((ButtonType button) -> {
             if (button == ButtonType.APPLY) {
                 try {
-                    Double amountValue = Double.parseDouble(amount.getText());
+                    double amountValue = Double.parseDouble(amount.getText());
                     if ((add ? amountValue : -amountValue) + currentAmount < 0)
+                        throw new IllegalArgumentException("amount can't be negative");
                     return Double.parseDouble(amount.getText());
                 } catch (Exception e) {
                     Alert alert = new Alert(Alert.AlertType.ERROR);
+                    alert.setContentText("Wrong parameters!\n(" + e.getMessage() + ")");
                     alert.showAndWait();
                 }
             }
