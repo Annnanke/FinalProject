@@ -1,6 +1,7 @@
 package DB;
 
 import Baiscs.Category;
+import Baiscs.Product;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -70,8 +71,6 @@ public class DB {
 
     }
 
-
-
     /**DELETE EVERYTHING*/
     public void deleteAll() {
         try {
@@ -95,12 +94,156 @@ public class DB {
     }
 
 
+    //PRODUCT
+    /**is the product present?*/
+    public boolean isProductPresent(int id) {
+        try {
+            Statement st = con.createStatement();
+            ResultSet res = st.executeQuery("SELECT * FROM product where id = " + id + ";");
+            if (res.next()) {
+                return true;
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Can`t find product", e);
+        }
+        return false;
+    }
 
+    /**is the product present, check by name*/
+    public boolean isProductPresent_ByName(String name) {
+        try {
+            Statement st = con.createStatement();
+            ResultSet res = st.executeQuery("SELECT * FROM product where name = '" + name + "';");
+            if (res.next()) {
+                return true;
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("PRODUCT NOT FOUND", e);
+        }
+        return false;
+    }
+
+
+   /**insert a product*/
+    public Product insertProduct(Product product) {
+        try {
+            PreparedStatement statement = con.prepareStatement("INSERT INTO product(name, description, producer, price, amount, category_id) VALUES (?, ?, ?, ?, ?, ?)");
+
+            statement.setString(1, product.getName());
+            statement.setString(2, product.getDescription());
+
+            statement.executeUpdate();
+
+            ResultSet resSet = statement.getGeneratedKeys();
+            product.setId(resSet.getInt("last_insert_rowid()"));
+            statement.close();
+            return product;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("ISSUE WITH PRODUCT INSERTION", e);
+        }
+    }
+
+   /**get product by ID*/
+    public Product getProductByID(int ID){
+
+        try {
+            Statement st = con.createStatement();
+            ResultSet res = st.executeQuery("SELECT * FROM product WHERE id = " + ID + ";");
+
+
+            if(res.next()){
+                return getProductFromResultSet(res);
+            } else return null;
+
+
+        } catch (SQLException e){
+            e.printStackTrace();
+            throw new RuntimeException("ISSUES WITH SQL QUERY FOR PRODUCT SELECTED BY ID", e);
+        }
+    }
+
+   /**List of ALL products getter*/
+    public List<Product> getAllProducts() {
+        try {
+            Statement st = con.createStatement();
+            ResultSet res = st.executeQuery("SELECT * FROM product");
+            List<Product> products = new ArrayList<>();
+            while (res.next()) {
+                products.add(getProductFromResultSet(res));
+            }
+            res.close();
+            return products;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Problems with SQL query for select products", e);
+        }
+    }
+
+    public List<Product> getProductsByCategoryId(int categoryId) {
+        try {
+            Statement st = con.createStatement();
+            ResultSet res = st.executeQuery("SELECT * FROM product WHERE category_id = " + categoryId + ";");
+            List<Product> products = new ArrayList<>();
+            while (res.next()) {
+                products.add(getProductFromResultSet(res));
+            }
+            res.close();
+            return products;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Problems with SQL query for select products", e);
+        }
+    }
+
+    private static Product getProductFromResultSet(ResultSet res) throws SQLException {
+        return new Product(res.getInt("id"),
+                res.getString("name"),
+                res.getString("description"),
+                res.getString("producer"),
+                res.getDouble("price"),
+                res.getDouble("amount"),
+                res.getInt("category_id"));
+    }
+
+    public void updateProduct(Product product){
+        try{
+            Statement st = con.createStatement();
+            st.executeUpdate("UPDATE product" +
+                    " SET name = '" + product.getName() + "', " +
+                    "description = '" + product.getDescription() +"', " +
+                    "distributor ='" + product.getDistributor() + "', " +
+                    "price = " + product.getPrice() + "," +
+                    "amount = " + product.getAmount() + "," +
+                    "category_id = " + product.getCategory_id() + " " +
+                    "WHERE id = " + product.getId() +
+                    ";");
+        }catch (SQLException e){
+            e.printStackTrace();
+            throw new RuntimeException("ISSUE WITH UPDATING THE PRODUCT", e);
+        }
+    }
+
+
+    /**Delete a product*/
+    public void deleteProduct(int id) {
+        try {
+            Statement st = con.createStatement();
+            st.executeUpdate("DELETE FROM product WHERE id = " + id + ";");
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("ISSUE WITH DELETING THE PRODUCT", e);
+        }
+    }
+
+
+
+    //CATEGORY
     /**get category by ID*/
     public Category getCategoryByID(int ID) {
         try {
             Statement st = con.createStatement();
-            ResultSet res = st.executeQuery("SELECT * FROM category WHERE ID = " + ID + ";");
+            ResultSet res = st.executeQuery("SELECT * FROM category WHERE id = " + ID + ";");
 
             if (res.next()) {
                 return  getCategoryFromResultSet(res);
@@ -125,10 +268,10 @@ public class DB {
 
 
    /**is category present?*/
-    public boolean isCategoryPresent(int id) {
+    public boolean isCategoryPresent(int ID) {
         try {
             Statement st = con.createStatement();
-            ResultSet res = st.executeQuery("SELECT * FROM category where id = " + id + ";");
+            ResultSet res = st.executeQuery("SELECT * FROM category where id = " + ID + ";");
             if (res.next()) {
                 return true;
 
@@ -194,19 +337,14 @@ public class DB {
 
     /**get ALL the categories*/
     public List<Category> getAllCategories() {
-        try {
-            Statement st = con.createStatement();
-            ResultSet res = st.executeQuery("SELECT * FROM category");
-            List<Category> categories = new ArrayList<>();
-            while (res.next()) {
-                categories.add(getCategoryFromResultSet(res));
-            }
-            res.close();
-            return categories;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            throw new RuntimeException("ISSUES WITH SQL QUERY FOR SELECTED CATEGORIES", e);
-        }
+
+       return null;
+    }
+
+   /**delete category*/
+    public void deleteCategory(int id) {
+
+
     }
 
 
