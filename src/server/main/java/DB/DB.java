@@ -104,7 +104,7 @@ public class DB {
                 return true;
             }
         } catch (SQLException e) {
-            throw new RuntimeException("Can`t find product", e);
+            throw new RuntimeException("NO PRODUCT FOUND", e);
         }
         return false;
     }
@@ -131,7 +131,10 @@ public class DB {
 
             statement.setString(1, product.getName());
             statement.setString(2, product.getDescription());
-
+            statement.setString(3, product.getDistributor());
+            statement.setDouble(4, product.getPrice());
+            statement.setDouble(5, product.getAmount());
+            statement.setInt(6, product.getCategory_id());
             statement.executeUpdate();
 
             ResultSet resSet = statement.getGeneratedKeys();
@@ -176,7 +179,7 @@ public class DB {
             return products;
         } catch (SQLException e) {
             e.printStackTrace();
-            throw new RuntimeException("Problems with SQL query for select products", e);
+            throw new RuntimeException("ISSUES WITH SQL QUERY FOR SELECTED PRODUCTS", e);
         }
     }
 
@@ -192,7 +195,7 @@ public class DB {
             return products;
         } catch (SQLException e) {
             e.printStackTrace();
-            throw new RuntimeException("Problems with SQL query for select products", e);
+            throw new RuntimeException("ISSUES WITH SQL QUERY FOR SELECTED PRODUCTS", e);
         }
     }
 
@@ -320,6 +323,8 @@ public class DB {
         }
     }
 
+
+
     /**update a category*/
     public void updateCategory(Category category){
         try{
@@ -335,16 +340,34 @@ public class DB {
         }
     }
 
+
+
     /**get ALL the categories*/
     public List<Category> getAllCategories() {
-
-       return null;
+        try {
+            Statement st = con.createStatement();
+            ResultSet res = st.executeQuery("SELECT * FROM category");
+            List<Category> categories = new ArrayList<>();
+            while (res.next()) {
+                categories.add(getCategoryFromResultSet(res));
+            }
+            res.close();
+            return categories;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("ISSUES WITH SQL QUERY FOR SELECTED CATEGORIES", e);
+        }
     }
 
    /**delete category*/
     public void deleteCategory(int id) {
-
-
+        try {
+            Statement st = con.createStatement();
+            st.executeUpdate("DELETE FROM category WHERE id = " + id + ";");
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("ISSUE WITH DELETE CATEGORY", e);
+        }
     }
 
 
