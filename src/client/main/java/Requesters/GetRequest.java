@@ -15,6 +15,9 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.ArrayList;
 
+import static Requesters.ConnectionString.AUTH_TOKEN;
+import static Requesters.ConnectionString.LOCAL_URL;
+
 
 public class GetRequest {
     public static ArrayList<Category> getAllCategories() throws URISyntaxException, IOException, InterruptedException {
@@ -61,23 +64,6 @@ public class GetRequest {
         ArrayList<Product> res = objectMapper.readValue(body, new TypeReference<ArrayList<Product>>() {});
         return res;
     }
-
-       /*     try {
-        ArrayList<Category> categories = getAllCategories();
-        for(Category category : categories){
-            ArrayList<Product> products = getAllProductsByCategoryId(category.getId());
-            ArrayList<ProductLabel> productLabels = new ArrayList<>();
-            for(Product product : products){
-                productLabels.add(new ProductLabel(product));
-            }
-            CategoryPane categoryPane = new CategoryPane(category, productLabels);
-            groupsUnitsVBox.getChildren().add(categoryPane);
-        }
-    } catch (URISyntaxException | IOException e) {
-        e.printStackTrace();
-    } catch (InterruptedException e) {
-        e.printStackTrace();
-    }*/
 
 
 }

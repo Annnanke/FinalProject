@@ -14,7 +14,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.ByteBuffer;
 
-
+import static Requesters.ConnectionString.*;
 
 
 public class putRequests {
