@@ -6,17 +6,23 @@ import Basics.User;
 import DB.DB;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sun.net.httpserver.Authenticator;
+import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpPrincipal;
 import com.sun.net.httpserver.HttpServer;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.lang.Strings;
 
 import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public class MyServer {
@@ -146,9 +152,124 @@ public class MyServer {
             exchange.close();
         });
 
-        //authentication
-        //getters
-        //...
+        Authenticator authenticator = new Authenticator() {
+            @Override
+            public Result authenticate(HttpExchange exchange) {
+                String jwt= exchange.getRequestHeaders().getFirst("Authorization");
+                if(jwt!=null) {
+                    String login = getUserLoginFromJWT(jwt);
+                    User user = db.getUserByLogin(login);
+                    if(user!=null){
+                        return new Success(new HttpPrincipal(login,"admin"));
+                    }
+                }
+                return new Failure(403);
+            }
+        };
+
+        server.createContext("/api/goods", exchange -> {
+                    if(exchange.getRequestMethod().equals("GET")){
+                        List<Product> products = db.getAllProducts();
+                        byte[] response = objectMapper.writeValueAsBytes(products);
+                        exchange.getResponseHeaders().set("Content-Type", "application/json");
+                        exchange.sendResponseHeaders(200, response.length);
+                        exchange.getResponseBody().write(response);
+                    }else exchange.sendResponseHeaders(405, 0);
+                    exchange.close();
+                }
+        );
+
+        server.createContext("/api/goodsbycategory/", exchange -> {
+                    int categoryId = getURIID(exchange.getRequestURI().getPath());
+                    if(categoryId < 1){
+                        exchange.sendResponseHeaders(404, 0);
+                        exchange.close();
+                        return;
+                    } else if(!(db.isCategoryPresent(categoryId))){
+                        exchange.sendResponseHeaders(404, 0);
+                        exchange.close();
+                        return;
+                    } else if(exchange.getRequestMethod().equals("GET")){
+                        List<Product> products = db.getProductsByCategoryId(categoryId);
+                        byte[] response = objectMapper.writeValueAsBytes(products);
+                        exchange.getResponseHeaders().set("Content-Type", "application/json");
+                        exchange.sendResponseHeaders(200, response.length);
+                        exchange.getResponseBody().write(response);
+                    }else exchange.sendResponseHeaders(405, 0);
+                    exchange.close();
+                }
+        );
+
+        server.createContext("/api/categories", exchange -> {
+
+                    if(exchange.getRequestMethod().equals("GET")){
+                        List<Category> categories = db.getAllCategories();
+                        byte[] response = objectMapper.writeValueAsBytes(categories);
+                        exchange.getResponseHeaders().set("Content-Type", "application/json");
+                        exchange.sendResponseHeaders(200, response.length);
+                        exchange.getResponseBody().write(response);
+                    }else exchange.sendResponseHeaders(405, 0);
+                    exchange.close();
+                }
+        );
+
+        server.createContext("/api/good", exchange -> {
+            if(exchange.getRequestMethod().equals("PUT")){
+                Product product = objectMapper.readValue(exchange.getRequestBody().readAllBytes(), Product.class);
+
+                if(product != null) {
+                    if(db.isProductPresent_ByName(product.getName()) || !product.isValid()){
+                        exchange.sendResponseHeaders(409, 0);
+                    } else {
+                        product = db.addProduct(product);
+                        byte[] response = ByteBuffer.allocate(4).putInt(product.getId()).array();
+
+                        exchange.sendResponseHeaders(201, response.length);
+                        exchange.getResponseBody().write(response);
+                    }
+                }
+            } else exchange.sendResponseHeaders(405, 0);
+            exchange.close();
+        }).setAuthenticator(authenticator);
+
+
+        // Goods
+        server.createContext("/api/good/", exchange ->{
+                    int productId = getURIID(exchange.getRequestURI().getPath());
+                    if(productId < 1){
+                        exchange.sendResponseHeaders(404, 0);
+                        exchange.close();
+                        return;
+                    } else if(!(db.isProductPresent(productId))){
+                        exchange.sendResponseHeaders(404, 0);
+                        exchange.close();
+                        return;
+
+                    } else if(exchange.getRequestMethod().equals("GET")){
+                        Product product = db.getProductByID(productId);
+                        byte[] response = objectMapper.writeValueAsBytes(product);
+                        exchange.getResponseHeaders().set("Content-Type", "application/json");
+                        exchange.sendResponseHeaders(200, response.length);
+                        exchange.getResponseBody().write(response);
+                    }else if(exchange.getRequestMethod().equals("POST")){
+                        String test = new String(exchange.getRequestBody().readAllBytes());
+                        test = Strings.replace(test, "\r\n", "");
+                        Product pr = objectMapper.readValue(exchange.getRequestBody(), Product.class);
+                        if(!db.isCategoryPresent(pr.getCategory_id()) || !pr.isValid()){
+                            exchange.sendResponseHeaders(409, 0);
+                        } else {
+                            db.updateProduct(pr);
+                            exchange.sendResponseHeaders(204, 0);
+                        }
+                    } else if(exchange.getRequestMethod().equals("DELETE")){
+                        Product product = db.getProductByID(productId);
+                        db.deleteProduct(product.getId());
+                        exchange.sendResponseHeaders(204, 0);
+                    }
+                    else exchange.sendResponseHeaders(405, 0);
+                    exchange.close();
+                }
+        ).setAuthenticator(authenticator);
 
 
 
