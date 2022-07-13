@@ -6,6 +6,9 @@ public class User {
     private String login;
     private String password;
 
+
+
+
     /**NO ID constructor*/
     public User(String login, String password) {
         this.login = login;
@@ -19,6 +22,8 @@ public class User {
         this.login = login;
         this.password = password;
     }
+
+
 
     //GETTERS AND SETTERS
     public Integer getId() {
@@ -44,6 +49,7 @@ public class User {
     public void setPassword(String password) {
         this.password = password;
     }
+
 
 
     @Override
