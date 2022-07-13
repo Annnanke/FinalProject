@@ -17,7 +17,7 @@ import java.nio.ByteBuffer;
 import static Requesters.ConnectionString.*;
 
 
-public class putRequests {
+public class PutRequests {
     private static ObjectMapper objectMapper =  new ObjectMapper();
 
     public static int[] putProductRequest(Product product) {
