@@ -82,6 +82,42 @@ public class Product {
         this.amount = amount;
     }
 
+    public Double getPrice() {
+        return price;
+    }
+
+    public void setPrice(Double price) {
+        this.price = price;
+    }
+
+    public Integer getCategory_id() {
+        return category_id;
+    }
+
+    public void setCategory_id(Integer category_id) {
+        this.category_id = category_id;
+    }
+
+
+    public boolean isValid(){
+        return name != null && description != null && distributor != null
+                && amount != null && price != null && category_id != null && price > 0 && amount > 0 && category_id > 0;
+    }
+
+    @Override
+    public String toString() {
+        return "Product {" +
+                "id =" + id +
+                ", name ='" + name + '\'' +
+                ", description ='" + description + '\'' +
+                ", distributor ='" + distributor + '\'' +
+                ", amount =" + amount +
+                ", price =" + price +
+                ", category_id =" + category_id +
+                '}';
+    }
+
+
 
 
 }
