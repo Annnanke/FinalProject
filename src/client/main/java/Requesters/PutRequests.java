@@ -37,4 +37,38 @@ public class putRequests {
 
         return new int[]{response.statusCode(), id};
 }
+    public static int doSignInRequest(String login, String password) throws URISyntaxException, IOException, InterruptedException {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(new URI(LOCAL_URL + "/login"))
+                .header("accept", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(GenerateLoginJSON(login, password)))
+                .build();
+        HttpResponse<String> response = HttpClient.newHttpClient().
+                send(request, HttpResponse.BodyHandlers.ofString());
+        if(response.statusCode() == 200) {
+            AUTH_TOKEN = response.headers().firstValue("Authorization").get();
+        }
+
+        return response.statusCode();
+    }
+
+    public static int deleteProduct(Product product){
+        return deleteSample(LOCAL_URL_PRODUCT + "/" + product.getId());
+    }
+
+    private static int deleteSample(String path){
+        HttpRequest request = null;
+        try {
+            request = HttpRequest.newBuilder()
+                    .uri(new URI(path))
+                    .header("accept", "application/json")
+                    .header("Authorization", AUTH_TOKEN)
+                    .DELETE()
+                    .build();
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        }
+    private static String GenerateLoginJSON(String login, String password){
+        return "{\"login\": \"" + login + "\", \"password\": \"" + password + "\"}";
+    }
 }
