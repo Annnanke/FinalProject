@@ -1,24 +1,26 @@
 package Baiscs;
 
+
 public class User {
     private Integer id;
     private String login;
     private String password;
 
+    /**NO ID constructor*/
     public User(String login, String password) {
         this.login = login;
         this.password = password;
     }
 
+
+    /**EVERYTHING constructor*/
     public User(Integer id, String login, String password) {
         this.id = id;
         this.login = login;
         this.password = password;
     }
 
-
-
-//WATCH OUT
+    //GETTERS AND SETTERS
     public Integer getId() {
     return id;
 }
