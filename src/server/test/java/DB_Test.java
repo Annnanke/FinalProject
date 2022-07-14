@@ -1,13 +1,15 @@
 import Basics.Category;
 import Basics.Product;
 import DB.DB;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-
 import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class DB_Test {
     private static final DB db = new DB();
@@ -34,13 +36,6 @@ public class DB_Test {
 
     };
 
-    //add stuff test yes
-    //delete everything test yes
-    //update category, update product test yes
-    //delete category, delete product test yes
-    //something else?? ???
-
-
     @BeforeEach
     void fillDataBase(){
         for (Category c: categories) {
@@ -53,22 +48,75 @@ public class DB_Test {
     }
 
 
-    //ehh annotation??
+    @AfterEach
     void clean(){
         db.deleteAll();
     }
 
 
     @Test
-    void testUpdateCategory(){}
+    void testUpdateCategory() {
+
+        List<Category> categories = db.getAllCategories();
+        Category category = db.addCategory(new Category("category4", "description4"));
+        db.updateCategory(new Category(category.getId(), "category3", "super-description"));
+
+        categories = db.getAllCategories();
+        System.out.println(categories.get(3).getDescription());
+
+        assert(categories.get(3).getDescription().equals("super-description"));
+    }
 
     @Test
-    void testUpdateProduct(){}
+    void testUpdateProduct() {
+        List<Product> products = db.getAllProducts();
+        Product product = db.addProduct(new Product("product6", "description6", "distributor", 7.0, 32.0, 1));
+        db.updateProduct(new Product(product.getId(), "product6", "description6", "distributor", 100.0, 60.0, 1));
+
+        products = db.getAllProducts();
+        assert(products.get(6).getPrice() == 100.0);}
 
 
     @Test
-    void testDeleteCategory(){}
+    void testDeleteCategory() {
+        List<Category> categories = db.getAllCategories();
+        db.deleteCategory(3);
+       categories = db.getAllCategories();
+
+        assertThat(categories).extracting(Category::getName).doesNotContain("category3");
+
+        List<Product> products = db.getAllProducts();
+        assertThat(products).extracting(Product::getName).doesNotContain("product3");}
+
+
     @Test
-    void testDeleteProduct(){}
+    void testDeleteProduct() {
+        List<Product> products = db.getAllProducts();
+        db.deleteProduct(4);
+        products = db.getAllProducts();
+
+        assertThat(products).extracting(Product::getName).doesNotContain("product4");
+    }
+
+
+    @Test
+    void testGetAllProduct(){
+        List<Product> products = db.getAllProducts();
+
+        assertThat(products)
+                .extracting(Product::getName)
+                .containsExactly("product1", "product2", "product3", "product4", "product5", "product6");
+    }
+
+    @Test
+    void testGetAllCategory(){
+        List<Category> categories = db.getAllCategories();
+
+        assertThat(categories)
+                .extracting(Category::getName)
+                .containsExactly("category1", "category2", "category3");
+    }
+
+
 
 }
