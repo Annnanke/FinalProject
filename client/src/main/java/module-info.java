@@ -6,6 +6,6 @@ module org.example {
     opens org.example to javafx.fxml;
     exports org.example;
     exports org.example.Requesters;
-    exports org.example.Objects;
+    exports org.example.Ent;
     opens org.example.Requesters to javafx.fxml;
 }

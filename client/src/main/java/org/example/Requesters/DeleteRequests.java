@@ -1,7 +1,7 @@
 package org.example.Requesters;
 
-import org.example.Objects.Category;
-import org.example.Objects.Product;
+import org.example.Ent.Category;
+import org.example.Ent.Product;
 
 import java.io.IOException;
 import java.net.URI;

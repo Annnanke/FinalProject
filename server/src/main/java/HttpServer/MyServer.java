@@ -48,7 +48,7 @@ public class MyServer {
 
     private static final User[] users = {
             new User("login", "password"),
-            new User("", "")
+            new User("uk", "raine")
     };
 
 

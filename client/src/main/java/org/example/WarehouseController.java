@@ -11,7 +11,7 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
-import org.example.Objects.*;
+import org.example.Ent.*;
 
 import static org.example.Requesters.GetAllRequests.getAllCategories;
 import static org.example.Requesters.GetAllRequests.getAllProductsByCategoryId;
@@ -42,7 +42,6 @@ public class WarehouseController {
                 result.setId(array[1]);
                 addCategoryPane(new CategoryPane(result));
             } else{
-                // TODO: Add error;
                 System.out.println("ERROR");
             }
         });

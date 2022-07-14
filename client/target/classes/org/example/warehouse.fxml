@@ -1,23 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import java.net.URL?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="505.0" prefWidth="507.0" xmlns="http://javafx.com/javafx/11" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.WarehouseController">
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="505.0" prefWidth="579.0" stylesheets="@style.css" xmlns="http://javafx.com/javafx/18" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.WarehouseController">
    <children>
-      <Button fx:id="addCategoryButton" layoutX="327.0" layoutY="450.0" mnemonicParsing="false" onAction="#addCategory" text="Add category" />
-      <TextField fx:id="searchUnitTextField" layoutX="44.0" layoutY="161.0" />
-      <TextArea fx:id="generalStatisticsText" disable="true" layoutX="23.0" layoutY="265.0" prefHeight="114.0" prefWidth="202.0" />
-      <Button fx:id="searchUnitButton" layoutX="60.0" layoutY="124.0" mnemonicParsing="false" onAction="#searchUnitByName" text="Search by unit name" />
-      <ScrollPane fx:id="groupsScrollPane" fitToWidth="true" layoutX="246.0" layoutY="19.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="420.0" prefWidth="237.0">
+      <Button fx:id="addCategoryButton" layoutX="100.0" layoutY="455.0" mnemonicParsing="false" onAction="#addCategory" text="Add category" />
+      <TextField fx:id="searchUnitTextField" layoutX="30.0" layoutY="34.0" prefHeight="35.0" prefWidth="202.0" />
+      <TextArea fx:id="generalStatisticsText" disable="true" layoutX="327.0" layoutY="85.0" prefHeight="102.0" prefWidth="202.0" />
+      <Button fx:id="searchUnitButton" layoutX="246.0" layoutY="34.0" mnemonicParsing="false" onAction="#searchUnitByName" prefHeight="26.0" prefWidth="46.0" text="🔍" />
+      <ScrollPane fx:id="groupsScrollPane" fitToWidth="true" layoutX="29.0" layoutY="85.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="358.0" prefWidth="265.0">
          <content>
             <VBox />
          </content>
+         <stylesheets>
+            <URL value="@style.css" />
+            <URL value="@style1.css" />
+         </stylesheets>
       </ScrollPane>
-      <Button layoutX="69.0" layoutY="240.0" mnemonicParsing="false" onAction="#updateGeneralInfo" text="General statistics" />
+      <Button layoutX="354.0" layoutY="204.0" mnemonicParsing="false" onAction="#updateGeneralInfo" text="General statistics">
+         <font>
+            <Font size="10.0" />
+         </font></Button>
+      <Label layoutX="354.0" layoutY="28.0" text="Warehouse">
+         <font>
+            <Font size="32.0" />
+         </font>
+      </Label>
+      <Label layoutX="470.0" layoutY="481.0" prefHeight="18.0" prefWidth="103.0" text="Калита, Кірік 2022" />
    </children>
 </AnchorPane>
